@@ -29,7 +29,7 @@ function toast(msg, type = 'success') {
 }
 
 // ── API helpers ───────────────────────────────────────────────────────────────
-async function apiFetch(path, opts = {}, timeoutMs = 15000) {
+async function apiFetch(path, opts = {}, timeoutMs = 40000) {
   const ctrl = new AbortController();
   const tid = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
@@ -43,7 +43,7 @@ async function apiFetch(path, opts = {}, timeoutMs = 15000) {
     return res.json();
   } catch(e) {
     clearTimeout(tid);
-    if (e.name === 'AbortError') throw new Error('Request timed out. Check the server is running.');
+    if (e.name === 'AbortError') throw new Error('Request timed out — the server may be starting up. Please wait a moment and retry.');
     throw e;
   }
 }
@@ -51,9 +51,11 @@ const apiGet  = p => apiFetch(p);
 const apiPost = (p, b) => apiFetch(p, { method: 'POST', body: JSON.stringify(b) });
 
 // ── Health polling ────────────────────────────────────────────────────────────
+let _serverWasOffline = false;
+
 async function pollHealth() {
   try {
-    const h = await apiGet('/health');
+    const h = await apiFetch('/health', {}, 40000);
     connDot.className = 'conn-dot on'; connText.textContent = 'Connected';
     if (h.ml_ready) {
       mlReady = true;
@@ -61,9 +63,17 @@ async function pollHealth() {
     } else {
       aiDot.className = 'ai-dot loading'; aiText.textContent = 'AI Loading…';
     }
+    // Server just came back online — reload the current page so it shows real data
+    if (_serverWasOffline) {
+      _serverWasOffline = false;
+      navigateTo('dashboard');
+    }
+    return true;
   } catch {
     connDot.className = 'conn-dot err'; connText.textContent = 'Offline';
     aiDot.className = 'ai-dot err'; aiText.textContent = 'Offline';
+    _serverWasOffline = true;
+    return false;
   }
 }
 
@@ -375,7 +385,13 @@ async function dashboard() {
     document.getElementById('refreshBriefing').addEventListener('click', loadBriefing);
 
   } catch(e) {
-    content.innerHTML = `<div class="page-section"><div class="card"><p>Dashboard error: ${e.message}<br>Make sure the server is running: <code>python api_server.py</code></p></div></div>`;
+    content.innerHTML = `
+      <div class="page-section"><div class="card" style="text-align:center;padding:32px 24px">
+        <div style="font-size:40px;margin-bottom:12px">⚠️</div>
+        <p style="font-size:15px;font-weight:600;margin-bottom:8px">Could not load dashboard</p>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:18px">${e.message}</p>
+        <button class="btn btn-primary" onclick="navigateTo('dashboard')">↻ Retry</button>
+      </div></div>`;
   }
 }
 
@@ -1004,10 +1020,41 @@ async function profile() {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-pollHealth();
-// Fast-poll on startup until AI is ready, then slow down to 15s
-let _fastPoll = setInterval(async () => {
-  await pollHealth();
-  if (mlReady) { clearInterval(_fastPoll); setInterval(pollHealth, 15000); }
-}, 4000);
-navigateTo('dashboard');
+// Show a "waking up" placeholder immediately — navigateTo runs once server responds
+content.innerHTML = `
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:18px;text-align:center;padding:24px">
+    <div style="font-size:52px">🧠</div>
+    <div style="font-size:18px;font-weight:700;color:var(--text)">MindMate is starting up…</div>
+    <div style="font-size:13px;color:var(--muted);max-width:320px;line-height:1.7">
+      The server is waking up (free hosting spins down after 15 min idle).<br>
+      This takes up to <strong style="color:var(--yellow)">30 seconds</strong> — please wait.
+    </div>
+    <div class="loader" style="margin-top:4px"><div class="spinner"></div></div>
+  </div>`;
+
+async function _init() {
+  // Poll until server is reachable, then load the dashboard
+  const online = await pollHealth();
+  if (online) {
+    navigateTo('dashboard');
+    // Fast-poll until AI models are ready, then slow down
+    let _fastPoll = setInterval(async () => {
+      await pollHealth();
+      if (mlReady) { clearInterval(_fastPoll); setInterval(pollHealth, 30000); }
+    }, 4000);
+  } else {
+    // Server offline — keep retrying every 5s
+    let _wakePoll = setInterval(async () => {
+      const up = await pollHealth();
+      if (up) {
+        clearInterval(_wakePoll);
+        navigateTo('dashboard');
+        let _fastPoll = setInterval(async () => {
+          await pollHealth();
+          if (mlReady) { clearInterval(_fastPoll); setInterval(pollHealth, 30000); }
+        }, 4000);
+      }
+    }, 5000);
+  }
+}
+_init();
