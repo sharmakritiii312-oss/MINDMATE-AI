@@ -38,7 +38,8 @@ MAX_HISTORY_TURNS: int = int(os.getenv("MAX_HISTORY_TURNS", "20"))
 
 # ─── API ───────────────────────────────────────────────────────────────────────
 API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
-API_PORT: int = int(os.getenv("API_PORT", "8000"))
+# Render injects PORT; API_PORT is the project-specific override; fallback to 8000.
+API_PORT: int = int(os.getenv("PORT") or os.getenv("API_PORT") or "8000")
 
 # ─── Safety ────────────────────────────────────────────────────────────────────
 CRISIS_HOTLINES: dict[str, str] = {

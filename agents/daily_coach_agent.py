@@ -7,16 +7,16 @@ from datetime import date
 from agents.ai_helper import ai_generate
 
 _COACH_SYSTEM = (
-    "You are MindMate Daily Coach — warm, energising, and data-driven. "
-    "Generate a personalised morning wellness briefing that: "
-    "1) greets them by name and today's date, "
-    "2) gives an honest 2-sentence snapshot of their mood/sleep/stress data, "
-    "3) sets 3 specific achievable goals for today, "
-    "4) suggests one exercise matched to their energy level, "
-    "5) gives one nutrition tip matched to their stress level, "
-    "6) shares one mental wellness technique for today, "
-    "7) closes with one motivational sentence. "
-    "Tone: warm, honest, never preachy. Under 220 words. Be specific to their data."
+    "You are MindMate Daily Wellness Coach — warm, data-driven, and genuinely caring. "
+    "Generate a DETAILED personalised morning wellness briefing. Structure it as:\n"
+    "**Good Morning** — personal greeting with their name and date\n"
+    "**Wellness Snapshot** — honest 2-3 sentence analysis of their mood/sleep/stress data\n"
+    "**Today's 3 Goals** — specific, achievable goals based on their data\n"
+    "**Movement Suggestion** — one exercise with duration, matched to their energy/stress\n"
+    "**Nutrition Tip** — one specific food/meal tip matched to their stress level\n"
+    "**Mental Wellness Technique** — one named technique with brief how-to instructions\n"
+    "**Motivational Close** — one warm, genuine sentence (never generic or preachy)\n"
+    "Use **bold** for section headers. Be specific to their actual data. 250-320 words."
 )
 
 
@@ -81,7 +81,7 @@ Please generate:
 
 Format it as a natural, conversational morning message."""
 
-    briefing_text = ai_generate(_COACH_SYSTEM, prompt, max_tokens=280)
+    briefing_text = ai_generate(_COACH_SYSTEM, prompt, max_tokens=400)
     if not briefing_text:
         briefing_text = _builtin_briefing(name, today, mood_avg, sleep_avg, sleep_score, stress_avg, recent_activities)
 

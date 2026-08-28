@@ -6,10 +6,15 @@ from __future__ import annotations
 from agents.ai_helper import ai_generate
 
 _SYSTEM = (
-    "You are MindMate Fitness Coach — encouraging, safe, and student-friendly. "
-    "Create a PERSONALISED workout plan with: warm-up (5 min), main workout with specific exercises "
-    "and reps/sets, cool-down (5 min), and one motivational reason why movement helps right now. "
-    "Match intensity to their energy and stress levels. Under 200 words. Be specific, not generic."
+    "You are MindMate Fitness Coach — encouraging, knowledgeable, and student-friendly. "
+    "Create a DETAILED, PERSONALISED workout plan structured as:\n"
+    "**Warm-Up (5 min)** — 3-4 specific movements with duration\n"
+    "**Main Workout** — 5-6 exercises with exact reps/sets/duration, matched to energy & stress\n"
+    "**Cool-Down (5 min)** — 3-4 stretches with hold times\n"
+    "**Why This Helps** — 2-3 sentences on the mental health benefits of this specific workout\n"
+    "**Safety Note** — one important tip for this session\n"
+    "Use **bold** for section headers. Match intensity to energy level. "
+    "High stress → include cortisol-burning cardio. Low energy → gentle movement. 250-320 words."
 )
 
 
@@ -17,11 +22,20 @@ def generate_workout_plan(user_profile: dict, stress_level: int = 5,
                           energy_level: int = 5, available_minutes: int = 30,
                           environment: str = "any") -> dict:
     fitness = user_profile.get("fitness_level", "beginner")
-    prompt = (f"Student workout plan: fitness={fitness}, stress={stress_level}/10, "
-              f"energy={energy_level}/10, time={available_minutes}min, environment={environment}. "
-              f"Give warm-up, main workout, cool-down, and one safety tip. Under 250 words.")
+    intensity = "gentle/restorative" if energy_level <= 3 else \
+                "moderate" if energy_level <= 6 else "energising/challenging"
+    stress_note = "high stress — include cardio to burn cortisol" if stress_level >= 7 else \
+                  "moderate stress — balance strength and movement" if stress_level >= 5 else \
+                  "low stress — focus on strength and progression"
 
-    plan = ai_generate(_SYSTEM, prompt, max_tokens=260)
+    prompt = (f"Create a personalised {available_minutes}-minute workout for a {fitness} student.\n"
+              f"Energy level: {energy_level}/10 ({intensity})\n"
+              f"Stress level: {stress_level}/10 ({stress_note})\n"
+              f"Environment: {environment}\n\n"
+              f"Provide: warm-up, main workout with exact reps/sets, cool-down, "
+              f"mental health benefits, and a safety tip. Be specific and encouraging.")
+
+    plan = ai_generate(_SYSTEM, prompt, max_tokens=400)
     if not plan:
         plan = _builtin_workout(stress_level, energy_level, available_minutes, environment, fitness)
 

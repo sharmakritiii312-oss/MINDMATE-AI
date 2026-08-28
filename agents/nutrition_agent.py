@@ -7,10 +7,16 @@ import json
 from agents.ai_helper import ai_generate
 
 _SYSTEM = (
-    "You are MindMate Nutrition Coach — practical, warm, student-focused. "
-    "Create a PERSONALISED daily meal plan with: breakfast, lunch, dinner, 2 snacks, "
-    "hydration goal, and one mood-boosting food tip matched to their stress/mood level. "
-    "Keep meals affordable, quick to make, and specific. Under 200 words. No filler."
+    "You are MindMate Nutrition Coach — a warm, practical student nutrition expert. "
+    "Create a DETAILED, PERSONALISED daily meal plan. Structure it with these sections:\n"
+    "**Breakfast** — specific meal with nutritional reason\n"
+    "**Mid-Morning Snack** — quick, healthy option\n"
+    "**Lunch** — affordable, filling meal idea\n"
+    "**Afternoon Snack** — energy-sustaining choice\n"
+    "**Dinner** — simple, nutritious meal\n"
+    "**Hydration Goal** — specific ml target with tips\n"
+    "**Mood & Stress Nutrition Tip** — science-backed tip matched to their mood/stress level\n"
+    "Use **bold** for section headers. Keep meals affordable, quick to make, and specific. 250-320 words."
 )
 
 
@@ -21,12 +27,20 @@ def generate_meal_plan(user_profile: dict, mood_score: int = 5,
         try: prefs = json.loads(prefs)
         except Exception: prefs = []
 
-    prompt = (f"Student meal plan: mood {mood_score}/10, stress {stress_level}/10, "
-              f"diet prefs: {', '.join(prefs) if prefs else 'none'}. "
-              f"Give breakfast, lunch, dinner, 2 snacks, hydration tip, and one mood-boosting food tip. "
-              f"Keep it affordable and under 250 words.")
+    stress_context = "very high stress — prioritise calming, magnesium-rich foods" if stress_level >= 8 else \
+                     "high stress — include omega-3 rich foods and avoid blood sugar spikes" if stress_level >= 6 else \
+                     "moderate stress" if stress_level >= 4 else "low stress — focus on energy and focus"
+    mood_context = "low mood — include tryptophan and B-vitamin rich foods" if mood_score <= 4 else \
+                   "moderate mood" if mood_score <= 6 else "good mood — maintain with balanced nutrition"
 
-    plan = ai_generate(_SYSTEM, prompt, max_tokens=260)
+    prompt = (f"Student daily meal plan: mood is {mood_score}/10 ({mood_context}), "
+              f"stress is {stress_level}/10 ({stress_context}). "
+              f"Diet preferences: {', '.join(prefs) if prefs else 'none specified'}.\n\n"
+              f"Create a complete, personalised daily meal plan with all 5 meals + snacks, "
+              f"hydration goal, and a specific mood/stress nutrition tip backed by science. "
+              f"Make meals affordable (student budget), quick to prepare, and specific.")
+
+    plan = ai_generate(_SYSTEM, prompt, max_tokens=400)
     if not plan:
         plan = _builtin_meal_plan(mood_score, stress_level, prefs)
 

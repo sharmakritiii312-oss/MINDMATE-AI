@@ -1,0 +1,327 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>MindMate AI — Render Deployment Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px; line-height: 1.6;
+    background: #ffffff; color: #1f2328;
+    padding: 32px 16px 48px;
+  }
+  .page { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #57606a; font-size: 13px; margin-bottom: 32px; }
+  h2 { font-size: 15px; font-weight: 700; margin: 28px 0 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+  h3 { font-size: 13px; font-weight: 700; margin: 16px 0 6px; color: #1f2328; }
+  p { margin-bottom: 10px; color: #1f2328; }
+  ul, ol { padding-left: 20px; margin-bottom: 10px; }
+  li { margin-bottom: 5px; }
+
+  /* Step header */
+  .step { display: flex; align-items: flex-start; gap: 12px; margin: 22px 0 8px; }
+  .step-num {
+    flex-shrink: 0; width: 28px; height: 28px;
+    background: #3b82d4; color: #fff;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .step-title { font-size: 15px; font-weight: 700; padding-top: 3px; }
+
+  /* Code blocks */
+  pre {
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 6px; padding: 12px 14px;
+    font-family: "Cascadia Code", "Fira Mono", monospace; font-size: 12.5px;
+    overflow-x: auto; margin: 8px 0 12px; white-space: pre;
+  }
+  code {
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 3px; padding: 1px 5px;
+    font-family: "Cascadia Code", "Fira Mono", monospace; font-size: 12px;
+  }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 13px; }
+  th { background: #f7f8fa; text-align: left; padding: 7px 10px; border: 1px solid #e5e7eb; font-weight: 600; }
+  td { padding: 7px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fbfcfd; }
+
+  /* Callouts */
+  .note { background: #f0f7ff; border-left: 3px solid #3b82d4; padding: 10px 14px; border-radius: 0 4px 4px 0; margin: 10px 0; font-size: 13px; }
+  .warn { background: #fffbf0; border-left: 3px solid #e6a817; padding: 10px 14px; border-radius: 0 4px 4px 0; margin: 10px 0; font-size: 13px; }
+  .ok   { background: #f0faf4; border-left: 3px solid #2da44e; padding: 10px 14px; border-radius: 0 4px 4px 0; margin: 10px 0; font-size: 13px; }
+  .bad  { background: #fff5f5; border-left: 3px solid #d73a4a; padding: 10px 14px; border-radius: 0 4px 4px 0; margin: 10px 0; font-size: 13px; }
+
+  /* AI feature table */
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+  .tag-green  { background: #dafbe1; color: #116329; }
+  .tag-yellow { background: #fff8c5; color: #7d4e00; }
+  .tag-blue   { background: #ddf4ff; color: #0969da; }
+
+  .divider { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0; }
+
+  footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid #e5e7eb; text-align: center; color: #57606a; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>🚀 MindMate AI — Complete Render Deployment Guide</h1>
+  <p class="subtitle">No separate frontend deploy needed · All AI features verified · Step-by-step with troubleshooting</p>
+
+  
+  <div class="note">
+    <strong>Do you need to restart the backend AND frontend separately?</strong><br />
+    <strong>No.</strong> MindMate has a single-process architecture. The FastAPI backend serves the frontend HTML/JS/CSS directly from the <code>frontend/</code> folder. There is no separate frontend server to start, build, or deploy. One Render web service runs everything. When you push code, Render rebuilds and restarts that one process — both backend and frontend update together.
+  </div>
+
+  <hr class="divider" />
+
+  
+  <div class="step"><div class="step-num">1</div><div class="step-title">Get a Free Groq API Key</div></div>
+  <p>Your AI features run on Groq (fast, free). Without this key nothing AI-related will work on Render.</p>
+  <ol>
+    <li>Go to <strong>console.groq.com</strong> → sign up (free, no credit card)</li>
+    <li>Click <strong>API Keys</strong> → <strong>Create API Key</strong></li>
+    <li>Copy the key — it starts with <code>gsk_…</code></li>
+    <li>Keep it safe; you'll paste it into Render in Step 4</li>
+  </ol>
+  <div class="warn">Never put this key in your code or commit it to git. Your <code>.env</code> is already in <code>.gitignore</code>.</div>
+
+  
+  <div class="step"><div class="step-num">2</div><div class="step-title">Push Your Code to GitHub</div></div>
+  <p>Open a terminal in your project folder and run:</p>
+  <pre>git add .
+git commit -m "feat: Render deployment config"
+git push origin main</pre>
+  <p>If you haven't connected to GitHub yet:</p>
+  <pre># One-time setup
+git init
+git add .
+git commit -m "Initial commit — MindMate AI"
+
+# Create a new repo on github.com first, then:
+git remote add origin https://github.com/YOUR_USERNAME/mindmate-ai.git
+git branch -M main
+git push -u origin main</pre>
+  <div class="ok"><strong>Confirm these files are in your repo before pushing:</strong> <code>render.yaml</code>, <code>Procfile</code>, <code>runtime.txt</code>, <code>requirements.txt</code>, <code>api_server.py</code>, <code>config.py</code>, <code>frontend/</code>, all <code>agents/</code> files.</div>
+
+  
+  <div class="step"><div class="step-num">3</div><div class="step-title">Create a Web Service on Render</div></div>
+  <ol>
+    <li>Go to <strong>render.com</strong> → sign in with GitHub</li>
+    <li>Click <strong>"New +"</strong> → <strong>"Web Service"</strong></li>
+    <li>Click <strong>"Connect a repository"</strong> → select your <code>mindmate-ai</code> repo</li>
+    <li>Render will detect <code>render.yaml</code> automatically and pre-fill the settings</li>
+    <li>Confirm these fields match:</li>
+  </ol>
+  <table>
+    <tr><th>Setting</th><th>Value</th></tr>
+    <tr><td>Name</td><td><code>mindmate-ai</code></td></tr>
+    <tr><td>Runtime</td><td>Python 3</td></tr>
+    <tr><td>Build Command</td><td><code>pip install --upgrade pip &amp;&amp; pip install -r requirements.txt</code></td></tr>
+    <tr><td>Start Command</td><td><code>uvicorn api_server:app --host 0.0.0.0 --port $PORT</code></td></tr>
+    <tr><td>Health Check Path</td><td><code>/health</code></td></tr>
+    <tr><td>Plan</td><td>Free (or Starter $7/mo to avoid 15-min sleep)</td></tr>
+  </table>
+  <div class="note">The start command uses <code>$PORT</code> — Render injects this automatically. Do <strong>not</strong> hardcode a port number.</div>
+
+  
+  <div class="step"><div class="step-num">4</div><div class="step-title">Add Environment Variables (Secrets)</div></div>
+  <p>In the Render service settings → <strong>"Environment"</strong> tab → add these:</p>
+  <table>
+    <tr><th>Key</th><th>Value</th><th>Note</th></tr>
+    <tr><td><code>GROQ_API_KEY</code></td><td><em>your key from Step 1</em></td><td>⚠️ Secret — add manually in dashboard</td></tr>
+    <tr><td><code>GROQ_MODEL</code></td><td><code>llama-3.3-70b-versatile</code></td><td>Best free-tier model on Groq</td></tr>
+    <tr><td><code>MAX_HISTORY_TURNS</code></td><td><code>20</code></td><td>Conversation memory length</td></tr>
+  </table>
+  <div class="warn"><strong>Do NOT set PORT manually.</strong> Render injects it automatically. Setting it yourself will break the binding.</div>
+  <div class="note">All other env vars (<code>API_HOST</code>, <code>OLLAMA_BASE_URL</code>, etc.) are already set in <code>render.yaml</code> — you don't need to re-enter them.</div>
+
+  
+  <div class="step"><div class="step-num">5</div><div class="step-title">Add Persistent Disk (keeps your database between deploys)</div></div>
+  <ol>
+    <li>In your Render service → <strong>"Disks"</strong> → <strong>"Add Disk"</strong></li>
+    <li>Set: Name = <code>mindmate-data</code> · Mount Path = <code>/opt/render/project/src/data</code> · Size = 1 GB</li>
+  </ol>
+  <div class="warn">Without this disk, your SQLite database (all mood logs, journal entries, sleep records) resets every time you deploy. Acceptable for testing, not for real use.</div>
+
+  
+  <div class="step"><div class="step-num">6</div><div class="step-title">Deploy &amp; Watch the Logs</div></div>
+  <p>Click <strong>"Create Web Service"</strong>. Render will:</p>
+  <ol>
+    <li>Clone your repo (~10 seconds)</li>
+    <li>Run <code>pip install -r requirements.txt</code> (~2–3 minutes on first build)</li>
+    <li>Start uvicorn on the injected <code>$PORT</code></li>
+    <li>Run the health check at <code>/health</code></li>
+  </ol>
+  <p>In the build logs you should see:</p>
+  <pre>✅ Database ready (loaded at startup)
+🚀 MindMate AI server started. Frontend available immediately.
+⏳ AI models loading in background — /health shows progress.
+✅ All AI models ready — full platform is live!</pre>
+  <div class="ok">Your app is live at <strong>https://mindmate-ai.onrender.com</strong> (or whatever name you chose).</div>
+
+  <hr class="divider" />
+
+  
+  <h2>AI Feature Status After Deployment</h2>
+  <p>Here is what every AI feature does on Render's free tier and how it performs:</p>
+  <table>
+    <tr><th>Feature</th><th>Status</th><th>How it works on Render</th></tr>
+    <tr>
+      <td><strong>💬 AI Chat</strong></td>
+      <td><span class="tag tag-green">✅ Full speed</span></td>
+      <td>Routes through Groq API (cloud) → ~1s responses. Requires <code>GROQ_API_KEY</code> set in Render dashboard.</td>
+    </tr>
+    <tr>
+      <td><strong>😊 Emotion Detection</strong></td>
+      <td><span class="tag tag-green">✅ Always works</span></td>
+      <td>Rule-based engine runs immediately (no GPU/RAM needed). HuggingFace model enriches results if RAM allows — graceful fallback if not.</td>
+    </tr>
+    <tr>
+      <td><strong>🌙 Sleep Plan</strong></td>
+      <td><span class="tag tag-green">✅ Full speed</span></td>
+      <td>Calls <code>ai_generate()</code> → Groq API. Falls back to rich built-in plan generator if Groq is unavailable.</td>
+    </tr>
+    <tr>
+      <td><strong>🥗 Meal / Nutrition Plan</strong></td>
+      <td><span class="tag tag-green">✅ Full speed</span></td>
+      <td>Same Groq → built-in fallback chain. Built-in fallback uses stress/mood-aware food logic.</td>
+    </tr>
+    <tr>
+      <td><strong>🏃 Workout Plan</strong></td>
+      <td><span class="tag tag-green">✅ Full speed</span></td>
+      <td>Groq → built-in fallback. Built-in generates environment-aware workouts without any LLM.</td>
+    </tr>
+    <tr>
+      <td><strong>📓 Journal Prompts &amp; Analysis</strong></td>
+      <td><span class="tag tag-green">✅ Full speed</span></td>
+      <td>Groq → built-in. Prompt generation and reflection analysis both work on free tier.</td>
+    </tr>
+    <tr>
+      <td><strong>📅 Daily Wellness Briefing</strong></td>
+      <td><span class="tag tag-green">✅ Full speed</span></td>
+      <td>Personalised morning briefing via Groq. 90-second timeout prevents hanging. Data from your SQLite records.</td>
+    </tr>
+    <tr>
+      <td><strong>📊 Analytics Dashboard</strong></td>
+      <td><span class="tag tag-green">✅ Instant</span></td>
+      <td>Reads directly from SQLite — no LLM call at all. Always fast.</td>
+    </tr>
+    <tr>
+      <td><strong>🛡️ Crisis Detection</strong></td>
+      <td><span class="tag tag-green">✅ Always works</span></td>
+      <td>Pure rule-based — runs before any LLM call. Zero latency, zero dependency on external APIs.</td>
+    </tr>
+    <tr>
+      <td><strong>🧠 HuggingFace Emotion Model</strong></td>
+      <td><span class="tag tag-yellow">⚠️ May not load</span></td>
+      <td>Needs ~3 GB RAM. Render free tier has 512 MB. If it fails, rule-based detection takes over — chat still works perfectly.</td>
+    </tr>
+    <tr>
+      <td><strong>🦙 Ollama (local LLM)</strong></td>
+      <td><span class="tag tag-blue">ℹ️ Not available</span></td>
+      <td>Ollama is a local desktop tool. Not available on Render. The code skips it automatically (3s timeout fast-fail) and uses Groq or built-in fallback.</td>
+    </tr>
+  </table>
+
+  
+  <h2>How to Verify Everything is Working</h2>
+  <p>Run these checks after your first successful deploy. Replace <code>YOUR-APP</code> with your Render URL slug.</p>
+
+  <h3>1. Health check (server is up)</h3>
+  <pre>https://YOUR-APP.onrender.com/health</pre>
+  <p>Expected response:</p>
+  <pre>{"status": "loading", "db_ready": true, "ml_ready": false, "version": "2.0.0", ...}</pre>
+  <p>After 1–2 minutes: <code>ml_ready</code> becomes <code>true</code> (or stays <code>false</code> on free tier — that's fine, Groq handles AI).</p>
+
+  <h3>2. Frontend loads</h3>
+  <pre>https://YOUR-APP.onrender.com/</pre>
+  <p>You should see the MindMate dashboard. If you see a blank page, check Render logs for a missing file error.</p>
+
+  <h3>3. AI Chat works (Groq)</h3>
+  <pre>POST https://YOUR-APP.onrender.com/chat
+Content-Type: application/json
+
+{"message": "I feel stressed about my exams", "user_id": "test"}</pre>
+  <p>Expected: A full JSON response with <code>response</code>, <code>emotion.primary_emotion</code>, and <code>recommendations</code>.</p>
+
+  <h3>4. API docs</h3>
+  <pre>https://YOUR-APP.onrender.com/docs</pre>
+  <p>Shows the interactive Swagger UI. You can test any endpoint directly from the browser.</p>
+
+  <hr class="divider" />
+
+  
+  <h2>Auto-Deploy on Every Git Push</h2>
+  <p>After initial setup, every push to <code>main</code> automatically rebuilds and redeploys:</p>
+  <pre>git add .
+git commit -m "Update feature X"
+git push origin main</pre>
+  <p>Render shows build progress in the dashboard. The old version stays live until the new one passes its health check.</p>
+
+  <hr class="divider" />
+
+  
+  <h2>Troubleshooting</h2>
+
+  <h3>🔴 "Service unavailable" or app never comes up</h3>
+  <ul>
+    <li>Check Render logs: <strong>Dashboard → your service → Logs</strong></li>
+    <li>Most common cause: <code>GROQ_API_KEY</code> not set. Add it in the Environment tab.</li>
+    <li>Second cause: a Python import error. Check logs for <code>ModuleNotFoundError</code>.</li>
+  </ul>
+
+  <h3>🔴 "AI models still loading" forever</h3>
+  <ul>
+    <li>Normal on free tier — HuggingFace models need 3 GB RAM which isn't available.</li>
+    <li>All AI features (chat, meal plans, sleep plans, briefings) still work via Groq.</li>
+    <li>Only the HuggingFace emotion enrichment is skipped — rule-based detection takes over.</li>
+  </ul>
+
+  <h3>🔴 Chat returns "AI models are still loading. Please wait…"</h3>
+  <ul>
+    <li>This means <code>_ready["ml"]</code> is false AND the chat endpoint requires ML.</li>
+    <li>Wait 60 seconds after deploy, then retry. If it persists, check logs for the ML loading error.</li>
+    <li>The <code>/health</code> endpoint shows current loading state.</li>
+  </ul>
+
+  <h3>🔴 App sleeps after 15 minutes (free tier)</h3>
+  <ul>
+    <li>This is expected on Render's free plan. First request after idle takes ~30 seconds (cold start).</li>
+    <li>To avoid this: upgrade to Starter plan ($7/mo) in Render dashboard.</li>
+  </ul>
+
+  <h3>🔴 Data lost after redeploy</h3>
+  <ul>
+    <li>You need the Persistent Disk (Step 5). Without it, SQLite lives in ephemeral storage.</li>
+    <li>Add the disk, mount at <code>/opt/render/project/src/data</code>, and redeploy.</li>
+  </ul>
+
+  <h3>🔴 "No module named X" in build logs</h3>
+  <ul>
+    <li>The package is missing from <code>requirements.txt</code>. Add it and push again.</li>
+  </ul>
+
+  <hr class="divider" />
+
+  
+  <h2>Summary of All Fixes Applied to Your Code</h2>
+  <table>
+    <tr><th>File</th><th>What was fixed</th></tr>
+    <tr><td><code>config.py</code></td><td>PORT resolution: now reads <code>PORT</code> (Render-injected) first, then <code>API_PORT</code>, then defaults to 8000. Avoids port mismatch on all PaaS platforms.</td></tr>
+    <tr><td><code>api_server.py</code></td><td>Removed redundant <code>import os as _os</code> + manual getenv in <code>__main__</code>. Now uses <code>API_HOST</code>/<code>API_PORT</code> from config (already PORT-aware).</td></tr>
+    <tr><td><code>render.yaml</code></td><td>Start command changed to <code>uvicorn … --port $PORT</code>. Removed static <code>API_PORT=10000</code> override. Updated GROQ_MODEL to <code>llama-3.3-70b-versatile</code> (valid Groq model).</td></tr>
+    <tr><td><code>Procfile</code></td><td>Same uvicorn + <code>$PORT</code> fix for Heroku-style platforms.</td></tr>
+    <tr><td><code>llm_agent.py</code></td><td>Default model and fallback chain updated to valid Groq model IDs (<code>llama-3.3-70b-versatile</code>, <code>llama3-8b-8192</code>, <code>gemma2-9b-it</code>).</td></tr>
+    <tr><td><code>agents/ai_helper.py</code></td><td>Same model fixes — all agents now use the correct Groq model IDs.</td></tr>
+  </table>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

@@ -6,11 +6,14 @@ from __future__ import annotations
 from agents.ai_helper import ai_generate
 
 _SLEEP_SYSTEM = (
-    "You are MindMate Sleep Coach — warm, evidence-based, and encouraging. "
-    "Generate a PERSONALISED sleep plan with: 1) honest assessment of their data, "
-    "2) a specific bedtime routine (with times), 3) three actionable sleep tips, "
-    "4) one relaxation technique they can try tonight. "
-    "Tone: like a caring friend, not a doctor. Under 200 words. No filler."
+    "You are MindMate Sleep Coach — a warm, science-backed sleep expert who genuinely cares about students. "
+    "Create a DETAILED, PERSONALISED sleep improvement plan. Structure it clearly with these sections:\n"
+    "1. **Sleep Assessment** — honest, specific feedback on their data\n"
+    "2. **Personalised Bedtime Routine** — 4-5 steps with exact times\n"
+    "3. **3 Sleep Improvement Tips** — evidence-based, student-specific\n"
+    "4. **Tonight's Relaxation Technique** — name it, explain how to do it step-by-step\n"
+    "5. **One Encouraging Insight** — something motivating about their pattern\n"
+    "Use **bold** for section headers. Be warm, specific, and practical. 250-320 words."
 )
 
 
@@ -25,17 +28,18 @@ def generate_sleep_plan(sleep_history: list[dict], user_profile: dict) -> dict:
         )
     else:
         avg_dur, avg_qual = 7.0, 5.0
-        history_text = "No sleep history yet."
+        history_text = "No sleep history yet — give general guidance for a student."
 
     sleep_score = min(10.0, round((avg_dur / 8.0) * 5 + (avg_qual / 10.0) * 5, 1))
 
     prompt = (f"Student: {user_profile.get('name','Student')}, "
-              f"avg sleep {avg_dur}h, quality {avg_qual}/10.\n"
-              f"Recent logs:\n{history_text}\n\n"
-              f"Give a personalised sleep plan: assessment, bedtime routine, 3 tips, one relaxation technique. "
-              f"Keep it warm and under 250 words.")
+              f"average sleep {avg_dur}h per night, average quality {avg_qual}/10.\n"
+              f"Recent sleep logs:\n{history_text}\n\n"
+              f"Create a comprehensive, personalised sleep improvement plan. "
+              f"Include assessment, bedtime routine with exact times, 3 evidence-based tips, "
+              f"a relaxation technique with steps, and an encouraging closing message.")
 
-    plan = ai_generate(_SLEEP_SYSTEM, prompt, max_tokens=260)
+    plan = ai_generate(_SLEEP_SYSTEM, prompt, max_tokens=400)
     if not plan:
         plan = _builtin_sleep_plan(avg_dur, avg_qual, user_profile.get("name", "Student"))
 

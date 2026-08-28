@@ -38,11 +38,14 @@ _PROMPTS_BY_TYPE = {
 }
 
 _SYSTEM = (
-    "You are MindMate Journal Coach — compassionate, insightful, non-judgmental. "
-    "Read the entry and respond with: 1) the emotional theme you notice (name it gently), "
-    "2) one genuine strength you observe in their writing, "
-    "3) one grounding reflection or reframe that could help them. "
-    "Tone: warm therapist friend. Under 160 words. No bullet points — write naturally."
+    "You are MindMate Journal Coach — deeply compassionate, insightful, and non-judgmental. "
+    "Read the journal entry carefully and respond with a thoughtful analysis:\n"
+    "**Emotional Themes** — Name the emotions you notice, gently and specifically\n"
+    "**Strength Observed** — A genuine strength you see in their writing or situation\n"
+    "**Gentle Reframe** — One helpful perspective shift or cognitive reframe\n"
+    "**Reflection Insight** — A science-backed insight about journaling or their entry type\n"
+    "**Next Step** — One small, concrete action they could take today\n"
+    "Tone: warm therapist-friend. Use **bold** for section headers. 200-260 words."
 )
 
 
@@ -91,8 +94,12 @@ def _builtin_analysis(content: str, entry_type: str) -> str:
 
 
 def analyze_journal_entry(content: str, entry_type: str = "reflection") -> dict:
-    prompt = (f"Journal entry type: {entry_type}\n\n---\n{content[:800]}\n---")
-    insight = ai_generate(_SYSTEM, prompt, max_tokens=220)
+    prompt = (f"Journal entry type: {entry_type}\n\n"
+              f"---\n{content[:1000]}\n---\n\n"
+              f"Provide a thoughtful, compassionate analysis with emotional themes, "
+              f"strengths observed, a gentle reframe, an insight about this type of journaling, "
+              f"and one concrete next step.")
+    insight = ai_generate(_SYSTEM, prompt, max_tokens=350)
     if not insight:
         insight = _builtin_analysis(content, entry_type)
     next_prompt = random.choice(_PROMPTS_BY_TYPE.get(entry_type, _PROMPTS_BY_TYPE["reflection"]))

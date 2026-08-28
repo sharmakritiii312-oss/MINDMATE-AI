@@ -25,7 +25,7 @@ from wellness_engine import Recommendation
 # ─── Groq API (with rate-limit retry) ────────────────────────────────────────
 
 # Fallback model chain — tried in order if primary is rate-limited
-_FALLBACK_MODELS = ["groq/compound", "qwen/qwen3.6-27b"]
+_FALLBACK_MODELS = ["llama3-8b-8192", "gemma2-9b-it"]
 
 
 def _call_groq_once(client, model: str, system: str, user: str, max_tokens: int) -> Optional[str]:
@@ -50,7 +50,7 @@ def _groq_chat(system: str, user: str, max_tokens: int = 300) -> Optional[str]:
     On per-minute rate limit → waits the exact retry-after time once, then moves on.
     """
     api_key    = os.getenv("GROQ_API_KEY", "")
-    groq_model = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+    groq_model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
     if not api_key:
         return None
 

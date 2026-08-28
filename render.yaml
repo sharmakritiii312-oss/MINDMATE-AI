@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: mindmate-ai
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    # Render sets $PORT automatically. We pass it explicitly to uvicorn so the
+    # process binds to the correct port regardless of any config defaults.
+    startCommand: uvicorn api_server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: API_HOST
+        value: "0.0.0.0"
+      - key: GROQ_MODEL
+        value: "llama-3.3-70b-versatile"
+      - key: OLLAMA_BASE_URL
+        value: "http://localhost:11434"
+      - key: MAX_HISTORY_TURNS
+        value: "20"
+      # Set these as SECRET in the Render dashboard — never commit real values:
+      - key: GROQ_API_KEY
+        sync: false          # marks this as a manual secret in dashboard
+    disk:
+      name: mindmate-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1

@@ -23,7 +23,7 @@ def ai_generate(system: str, prompt: str, max_tokens: int = 300,
     - Module not found   → skips Groq gracefully, goes to built-in
     """
     groq_api_key    = os.getenv("GROQ_API_KEY", "")
-    groq_model      = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+    groq_model      = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
     ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     ollama_model    = os.getenv("OLLAMA_MODEL", "phi3:mini")
 
@@ -43,7 +43,7 @@ def ai_generate(system: str, prompt: str, max_tokens: int = 300,
             print(f"[Groq] Init error: {e}")
             client = None  # type: ignore
 
-        fallback_models = ["groq/compound", "qwen/qwen3.6-27b"]
+        fallback_models = ["llama3-8b-8192", "gemma2-9b-it"]
         models_to_try   = [groq_model] + [m for m in fallback_models if m != groq_model]
 
         if client:  # type: ignore

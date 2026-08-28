@@ -284,8 +284,9 @@ def mood_analytics(user_id: str = Query("default")):
 @app.post("/sleep/log")
 def log_sleep_entry(body: SleepLogIn):
     _require_db()
-    _require_ml()
-    scored = _sleep_a.score_single_night(body.duration_hours, body.quality_score)
+    # score_single_night is pure math — no ML needed
+    from agents.sleep_agent import score_single_night as _score_night
+    scored = _score_night(body.duration_hours, body.quality_score)
     date_str = body.date or date.today().isoformat()
     entry_id = _db.log_sleep(
         body.user_id, date_str, body.bedtime, body.wake_time,
@@ -543,4 +544,7 @@ async def startup_event():
 # ─── Entry point ──────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
+    # PORT is injected by Render (and other PaaS hosts).
+    # API_PORT is the local/config override. config.py already resolves both,
+    # so API_PORT here is already the correct value.
     uvicorn.run("api_server:app", host=API_HOST, port=API_PORT, reload=False)

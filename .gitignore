@@ -1,6 +1,33 @@
+﻿# Secrets - never commit
 .env
+
+# Python
 __pycache__/
+*.pyc
+*.pyo
+.Python
+
+# Virtual environments
 .venv/
 venv/
-*.pyc
+env/
+
+# Node
 node_modules/
+
+# Data and databases - persisted on Render disk, not in repo
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Vector store
+chroma_store/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

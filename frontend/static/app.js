@@ -386,7 +386,7 @@ async function loadBriefing() {
   try {
     const b = await apiFetch(`/wellness/daily-briefing?user_id=${USER_ID}`, {}, 100000);
     if (!document.getElementById('briefingBody')) return;
-    el.innerHTML = `<div class="briefing-text">${b.briefing}</div>`;
+    el.innerHTML = `<div class="briefing-text">${md(b.briefing)}</div>`;
   } catch(e) {
     if (!document.getElementById('briefingBody')) return;
     if (!mlReady) {
@@ -653,7 +653,7 @@ async function sleep() {
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
           ${[['🌙','Sleep Score',p.sleep_score+'/10',scoreCol(p.sleep_score)],['⏱','Avg Duration',p.avg_duration+'h',p.avg_duration>=7?'var(--green)':'var(--yellow)'],['⭐','Avg Quality',p.avg_quality+'/10',scoreCol(p.avg_quality)]].map(([i,l,v,c])=>`<div class="card" style="margin:0;text-align:center"><div style="font-size:20px">${i}</div><div style="font-size:11px;color:var(--muted);margin:3px 0">${l}</div><div style="font-size:20px;font-weight:800;color:${c}">${v}</div></div>`).join('')}
         </div>
-        <div class="ai-block">${p.plan}</div>`;
+        <div class="ai-block">${md(p.plan)}</div>`;
     } catch(e){area.innerHTML=`<div class="card"><p>${e.message}</p></div>`;}
   });
   async function loadSleepHist() {
@@ -695,7 +695,7 @@ async function nutrition() {
   document.getElementById('ns').addEventListener('input',e=>document.getElementById('nsv').textContent=e.target.value);
   document.getElementById('getMealPlan').addEventListener('click', async()=>{
     const area=document.getElementById('mealPlanArea'); area.innerHTML=loader('Generating personalised meal plan…');
-    try { const p=await apiFetch('/nutrition/meal-plan',{method:'POST',body:JSON.stringify({user_id:USER_ID,mood_score:+document.getElementById('nm').value,stress_level:+document.getElementById('ns').value})},120000); area.innerHTML=`<div class="page-section"><p class="section-title">Your Personalised Meal Plan</p><div class="ai-block">${p.meal_plan}</div></div>`; }
+    try { const p=await apiFetch('/nutrition/meal-plan',{method:'POST',body:JSON.stringify({user_id:USER_ID,mood_score:+document.getElementById('nm').value,stress_level:+document.getElementById('ns').value})},120000); area.innerHTML=`<div class="page-section"><p class="section-title">Your Personalised Meal Plan</p><div class="ai-block">${md(p.meal_plan)}</div></div>`; }
     catch(e){area.innerHTML=`<div class="page-section"><div class="card"><p>⚠️ ${e.message}</p></div></div>`;}
   });
   try {
@@ -738,7 +738,7 @@ async function exercise() {
   document.getElementById('exe').addEventListener('input',e=>document.getElementById('exev').textContent=e.target.value);
   document.getElementById('getWorkout').addEventListener('click', async()=>{
     const a=document.getElementById('workoutArea'); a.innerHTML=loader('Building your workout plan…');
-    try { const p=await apiFetch('/exercise/plan',{method:'POST',body:JSON.stringify({user_id:USER_ID,stress_level:+document.getElementById('exs').value,energy_level:+document.getElementById('exe').value,available_minutes:+document.getElementById('ext').value,environment:document.getElementById('exenv').value})},120000); a.innerHTML=`<div class="page-section"><p class="section-title">Your Workout Plan</p><div class="ai-block">${p.workout_plan}</div></div>`; }
+    try { const p=await apiFetch('/exercise/plan',{method:'POST',body:JSON.stringify({user_id:USER_ID,stress_level:+document.getElementById('exs').value,energy_level:+document.getElementById('exe').value,available_minutes:+document.getElementById('ext').value,environment:document.getElementById('exenv').value})},120000); a.innerHTML=`<div class="page-section"><p class="section-title">Your Workout Plan</p><div class="ai-block">${md(p.workout_plan)}</div></div>`; }
     catch(e){a.innerHTML=`<div class="page-section"><div class="card"><p>⚠️ ${e.message}</p></div></div>`;}
   });
   document.getElementById('logExBtn').addEventListener('click', async()=>{
@@ -816,7 +816,7 @@ async function journal() {
     document.getElementById('insightArea').innerHTML=loader('AI is reading your entry…');
     try {
       const r=await apiFetch('/journal/entry',{method:'POST',body:JSON.stringify({user_id:USER_ID,content:val,entry_type:document.getElementById('jType').value,mood_before:+document.getElementById('jm').value})},120000);
-      document.getElementById('insightArea').innerHTML=`<div class="card" style="border-left:3px solid var(--purple);border-radius:0 var(--r2) var(--r2) 0"><div class="card-title">🧠 AI Reflection</div><div class="ai-block" style="background:none;border:none;padding:0">${r.insight}</div><div style="margin-top:12px;padding:9px 12px;background:var(--purple-dim);border-radius:var(--r);font-size:13px;color:var(--purple-h)">💭 Next prompt: <em>${r.next_prompt}</em></div></div>`;
+      document.getElementById('insightArea').innerHTML=`<div class="card" style="border-left:3px solid var(--purple);border-radius:0 var(--r2) var(--r2) 0"><div class="card-title">🧠 AI Reflection</div><div class="ai-block" style="background:none;border:none;padding:0">${md(r.insight)}</div><div style="margin-top:12px;padding:9px 12px;background:var(--purple-dim);border-radius:var(--r);font-size:13px;color:var(--purple-h)">💭 Next prompt: <em>${r.next_prompt}</em></div></div>`;
       document.getElementById('jContent').value=''; toast('Journal saved ✓'); loadJHist();
     } catch(e){document.getElementById('insightArea').innerHTML=`<div class="card"><p>${e.message}</p></div>`;}
     btn.disabled=false; btn.textContent='✨ Save & Get AI Insight';
