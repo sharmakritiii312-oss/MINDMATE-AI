@@ -54,8 +54,15 @@ def _groq_chat(system: str, user: str, max_tokens: int = 300) -> Optional[str]:
     if not api_key:
         return None
 
-    from groq import Groq
-    client = Groq(api_key=api_key)
+    try:
+        from groq import Groq
+        client = Groq(api_key=api_key)
+    except ImportError:
+        print("[Groq] Package not installed. Run: .venv\\Scripts\\pip install groq")
+        return None
+    except Exception as e:
+        print(f"[Groq] Init error: {e}")
+        return None
 
     models_to_try = [groq_model] + [m for m in _FALLBACK_MODELS if m != groq_model]
 
